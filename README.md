@@ -2,6 +2,8 @@
 ______
 ## Overview
 
+*Currently depends on MooTools
+
 *Basil*, is a view/controller package for frontend designers and javascript developers. *Basil* dyanmically loads views, can attach events to tags, and load dynamic content from simple HTML attributes. Basil has a built in hash change listener built with HTML/Javascript, and is javascript framework independent. 
 
 **Designers:** *Basil* uses Simple HTML markup attributes to control the the behaviors, triggers, views, and data calls. This enables you to mark up views/templates with little to no coordination with the backend developers. Views are stored as .tpl files in the views folder, views are are purely HTML.  
