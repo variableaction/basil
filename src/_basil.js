@@ -2,37 +2,157 @@
 /***
 #############################################################################################################################
 
-	Class: 			basil
-	
-	Creator: 		Jason Spangler
-	Created: 		08/29/12
-	
-	Modifier:		Jason Spangler
-	Modified: 		12/18/12
+	Class: 			Basil
 
 	Description: 	The view controller that redirects views and functions
 
 #############################################################################################################################
 */
-var basil = {
-	hash_refresh: true,
-	change_detected: false,
-	views_path: '/ui/js/basil/sections/',
-	view_ext: '.bsl',
-	view_object: {},
-	section_object: {},
-	load_counter: 0,
-	ignore_keys: [
-		37,	// left
-		38,	// right
-		39,	// up
-		40, // down
-		13, // enter
-		91, // alt
-		9,	// tab
-		20	// caps lock
-	],
+
+// #############################################################################################################################
+//	Basil API/object Outline
+// #############################################################################################################################
 	
+	var Basil = {
+		
+	// ----------------------------------------------------------------------
+	//	Internal
+	// ----------------------------------------------------------------------
+	
+		
+		core: {
+			// Utility Functions/methods, etc
+			util: {},
+			
+			events: {
+				loadLeaf: function() {}
+			},
+			
+			// Instances of data,etc being stored?
+			active: {
+				user_idle: false,
+			},
+			
+			settings: {
+				defaults: {},	// Our default settings for basil
+				options: {}		// user-submitted options (provided in Basil.config(options))
+			},
+			
+			run: {
+				stem: {
+					init: function() {}
+				},
+				leaf: {
+					build: function() {}
+				}
+			}
+			
+		},
+		
+		app: {
+			stems: {},
+			leaves: {},
+			events: {}
+		},
+			
+	// ----------------------------------------------------------------------
+	//	External (for the user)
+	// ----------------------------------------------------------------------
+		
+		// Setup method (defined below)
+		config: function(options) {},
+		
+		// Starts basil processing
+		init: function() {},
+		
+		// User setup methods; should all be done before init
+		addEvent:	function() {},
+		addLeaf:	function() {},
+		loadLeaf:	function(el,leafFile) {}
+		
+		// FUTURE
+		//addLeafEvent:	function() {},
+	
+	};
+	
+
+
+// #############################################################################################################################
+//	Setup & Initialization
+// #############################################################################################################################
+
+	Basil.prepare = function() {
+		
+	}
+
+	Basil.run = function() {
+		
+		Basil.core.run.stem.init();
+		
+	}
+
+
+
+	Basil.core.run.stem.init = function() {
+		
+		// If no stems provided in config, FREAK OUT!
+		// alternatively, we could handle this error in the config method
+	
+		// figure out where we are (in hash?)
+		// take to default hash if necessary? or maybe "first stem"
+		
+		// Then trigger buildLeaf on that element?
+		
+		Basil.core.run.leaf.build(el);
+	}
+
+	Basil.core.run.leaf.build = function(leafEl) {
+	
+		var lu = Basil.core.run.leaf;
+	
+		/*lu.findViews(leafEl);
+			
+		lu.findDataFields(leafEl);
+
+		lu.findTriggers(leafEl);
+		
+		lu.findBehaviors(leafEl);
+				
+		lu.findInputs(leafEl);*/
+
+	}
+
+
+//Basil.addEvent();
+
+/*
+
+Basil.addEvent('eventName',function() {});
+
+
+Basil.addLeaf('party.html',{
+	data: 'magic.json',
+	events: {
+		doSomethingAwesome: function() {
+			
+		}
+	}
+});
+
+Basil.addLeafEvent('party.html','eventName',function() {});
+
+*/
+
+
+Basil.settings.defaults = {
+	debug: false,
+	paths: '/assets/javascript/app/stems/',
+	leaf_path_prefix: '/assets/javascript/app/leaves/'
+}
+
+
+
+var basil = {
 	
 	/***
 		Method:			updateObject

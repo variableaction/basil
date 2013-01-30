@@ -1,5 +1,3 @@
-var Trigger = {};
-var Behavior = {};
 
 /*************************************************************************
 	consoleLog
@@ -31,9 +29,9 @@ function basilInit() {
 	if (window.location.pathname != '') window.location = '/' + window.location.hash;
 
 	// stores the main view to look at initially
-	_hash.view = document.getElementById('bodySection');
+	Basil.hash.view = document.getElementById('bodySection');
 
-	_hash.hashChangeDetector(_hash.listener);
+	Basil.hash.hashChangeDetector(Basil.hash.listener);
 };
 
 
