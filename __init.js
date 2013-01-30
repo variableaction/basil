@@ -9,7 +9,9 @@ var Behavior = {};
 	@require obj
 **************************************************************************/
 function consoleLog(obj) {
+	//if (basil.settings.dev == 1) {
 	if (typeof console !== 'undefined') console.log(obj);
+	//}
 }
 
 function growl(obj) {
@@ -32,7 +34,7 @@ function basilInit() {
 	_hash.view = document.getElementById('bodySection');
 
 	_hash.hashChangeDetector(_hash.listener);
-});
+};
 
 
 // add onload event to fire up basil

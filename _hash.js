@@ -2,31 +2,19 @@
 /***
 #############################################################################################################################
 
-	Class: 			_hash
-	
-	Creator: 		Jason Spangler
-	Created: 		08/29/12
-	
-	Modifier:		Jason Spangler
-	Modified: 		12/18/12
+	Class: 			Basil.hash
 
 	Description: 	The hash listener that handles everything that happens when a hash change occurs.
 
 #############################################################################################################################
 */
-var _hash = {
+
+Basil.hash = {
 	ajax_path: '/ajax/',
 	ajax_extension: '_call.ajax.php',
 	
 
 	/***
-		Method:			hashChangeDetector
-		Creator:		Jason Spangler
-		Created:		12/18/12
-	
-		Modifier:		Jason Spangler
-		Modified:		12/18/12
-	
 		Description:	Adds a hash listener event and calls the appropriate function
 		@param: 		func (FUNCTION) the function to call when a hash change occurs
 	*/
@@ -65,7 +53,7 @@ var _hash = {
 		Description:	Stores the current hash as an array after the #!/
 	*/
 	getHash: function() {
-		_hash.hash = window.location.hash.substr(3).replace('-', '_').split('/');
+		Basil.hash.hash = window.location.hash.substr(3).replace('-', '_').split('/');
 	},
 	
 
@@ -81,19 +69,19 @@ var _hash = {
 	*/
 	getUrl: function() {
 		// store the url
-		_hash.url = _hash.ajax_path + _hash.hash[0] + _hash.ajax_extension;
+		Basil.hash.url = Basil.hash.ajax_path + Basil.hash.hash[0] + Basil.hash.ajax_extension;
 
 		// stores the section we are in
-		_hash.section = _hash.hash[0];
+		Basil.hash.section = Basil.hash.hash[0];
 		
 		// highlights the tab we are currently at in the navigation
 		$$('#header a').removeClass('selected');
 		
 		// if secondary nav this will highlight that
-		$$('.' + _hash.section + '-nav').addClass('selected');
+		$$('.' + Basil.hash.section + '-nav').addClass('selected');
 		
 		// stores the section as the class on current view
-		_hash.view.className = _hash.section;
+		Basil.hash.view.className = Basil.hash.section;
 	},
 	
 
@@ -111,7 +99,7 @@ var _hash = {
 	handleResponse: function(data) {
 
 		// store the current section object to call functions
-		basil.section_object = window[_hash.section + '_Section'];
+		basil.section_object = window[Basil.hash.section + '_Section'];
 				
 		// store the data
 		basil.view_object = data;
@@ -124,7 +112,7 @@ var _hash = {
 		basil.load_counter = 0;
 		
 		// load the view for current section
-		basil.loadView(_hash.view, basil.views_path + _hash.section + '/views/main' + basil.view_ext);
+		basil.loadView(Basil.hash.view, basil.views_path + Basil.hash.section + '/views/main' + basil.view_ext);
 
 	},
 
@@ -144,19 +132,19 @@ var _hash = {
 		@see			(CLASS) content_Section (METHOD) cleanupEvent
 	*/
 	listener: function(e) {
-		if (e) _hash.previousURL = e.oldURL;
+		if (e) Basil.hash.previousURL = e.oldURL;
 		
 		// the initial function to call immediately after hash change occurs
 		if (basil.section_object && basil.section_object.cleanupEvent && !basil.section_object.cleanupEvent()) return;
 		
 		// returns array of the hash
-		_hash.getHash();
+		Basil.hash.getHash();
 		
 		// the url to call out to retrieve json information
-		_hash.getUrl();
+		Basil.hash.getUrl();
 		
 		// post to the url to get the data for the page
-		_ajax.postJSON(_hash.url, { hash: _hash.hash }, _hash.handleResponse);
+		Basil.ajax.postJSON(Basil.hash.url, { hash: Basil.hash.hash }, Basil.hash.handleResponse);
 		
 	}
 };

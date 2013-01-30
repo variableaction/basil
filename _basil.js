@@ -17,7 +17,7 @@
 var basil = {
 	hash_refresh: true,
 	change_detected: false,
-	views_path: '/basil/sections/',
+	views_path: '/ui/js/basil/sections/',
 	view_ext: '.bsl',
 	view_object: {},
 	section_object: {},
