@@ -28,7 +28,8 @@
 		core: {
 			
 			event_actions: {
-				loadLeaf: function() {}
+				loadLeaf: function() {},
+				alert: function(str) { alert(str); }
 			},
 			
 			// Instances of data,etc being stored?
@@ -46,7 +47,8 @@
 					init: function() {}
 				},
 				leaf: {
-					build: function() {}
+					build: function() {},
+					cleanup: function() {}
 				}
 			}
 			
@@ -89,6 +91,8 @@
 	// Default Settings
 	Basil.core.settings = {
 		debug: false,
+		displayGradually: true,
+		displaySpeed: 250,
 		paths: '/assets/javascript/app/stems/',
 		leaf_path_prefix: '/assets/javascript/app/leaves/'
 	};

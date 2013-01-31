@@ -2,36 +2,46 @@
 
 Basil.core.run.leaf = function(leafEl,leafFile) {
 		
+		this.cleanup	= function() {};
 		
 		this.element 	= leafEl;
 		this.file 		= leafFile;
 		this.data		= undefined;
+		this.data_url	= undefined;
 		
 		this.dataready 	= false;
 		this.htmlready 	= false;
 		
 		var ajax 		= Basil.util.ajax;
 		
+		// if the leaf exists in app, add the actions and the data_url
+		if (Basil.app.leaves[this.file]) {
+			Basil.util.each(Basil.app.leaves[this.file], function(name, obj) {
+				this[name] = obj;
+			}.bind(this));
+		}
+		
 		this.build = function() {
+		
+			// immediately hide the element so we can load everything without looking janky
+			this.hideElement();
 						
-			// Run cleanup on insides of element?
+			
 			// Check for destrcut events on each element?
 			// Run those actions
 			// Remove contents
 						
 			// Apply events
 			//this.applyEvents(leafEl);
-			console.log('check it out');
-			console.log(this.file);
-			console.log(Basil.app.leaves);
+
 			
-			if (Basil.app.leaves[this.file] && typeof Basil.app.leaves[this.file].data == 'string') {
+			if (typeof this.data_url == 'string') {
 				
 				// Check for hug in data, if there, fill it in
 					// if it is 'hash:param', get it from Basil.core.run.stem.hashParams
 				
 				// data: '/+/user.json?id={{hash:id}}',			// {{hash:*}}
-				var new_data_url = Basil.app.leaves[this.file].data.replace(/\{\{(.*?)\}\}/g, function(hug, key) {
+				var new_data_url = this.data_url.replace(/\{\{(.*?)\}\}/g, function(hug, key) {
 				
 					hashParamBeingRequested = key.trim().split(':').pop();
 				
@@ -44,7 +54,6 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 					
 					callback: function(response) {
 						//Basil.util.elData(el,'data',leafInstanceDataLoaded);
-						
 						this.data = response;
 						
 						if (this.htmlready) {
@@ -90,8 +99,8 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 			
 			Basil.util.ajax.get(Basil.core.settings.leaf_path + leafFile, {
 				callback: function(response) {
-					
-					this.view_response = response;
+										
+					Basil.util.html(this.element, response);
 					
 					if (this.dataready) {
 						this.process();
@@ -121,26 +130,70 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 		
 		
 		this.process = function() {
-
-			this.findHugs();
 			
-			Basil.util.html(this.element, this.view_response);
+			this.findLoops(this.element);
+			
+			this.findIfs(this.element);
+
+			this.findHugs(this.element);
 			
 			this.findLeaves(this.element);
 			
-			this.removeBasilAttributes();
+			this.findEvents(this.element);
+			
+			//this.removeBasilAttributes();
+			
+			this.showElement();
 			
 		};
 		
-		this.removeBasilAttributes = function() {
+		
+		this.findLoops = function(leafEl) {
+			// gets all items that have bsl-loop
+			var leaves = Basil.util.getElementsByAttribute(leafEl, 'bsl-loop');
+			
+			// if no leaves then continue processing page
+			if (!leaves.length) return;
+			
+			// for each leaf with a loop
+			Basil.util.each(leaves, function(index, leaf) {
+			
+				// get the data to be looping
+				// items
+				//!! FUTURE use cases:
+				// items as item 
+				data_key 	= leaf.getAttribute('bsl-loop');
+				
+				// if the data exists then loop through the data
+				if (this.data[data_key]) {
+					
+					// loops through all the data
+					Basil.util.each(this.data[data_key], function(index, obj) {
+					
+						// clones the loop node to insert into dom
+						var loop_el	= leaf.cloneNode(true);
+						
+						// finds any data hugs
+						this.findHugs(loop_el, obj);
+						
+						// inserts node into the dom
+						leaf.parentNode.appendChild(loop_el);
+					}.bind(this));
+					
+				}
+				
+				// removes the actual loop node from the dom
+				leaf.parentNode.removeChild(leaf);
+			}.bind(this));
 			
 		};
-		
-		
-		this.findHugs = function() {
+
+
+		this.findHugs = function(leafEl, data) {
+			if (!data) data = this.data;
 			
 			// process hash variables in hugs
-			this.view_response = this.view_response.replace(/\{\{hash:(.*?)\}\}/g, function(hug, key) {
+			leafEl.innerHTML = leafEl.innerHTML.replace(/\{\{hash:(.*?)\}\}/g, function(hug, key) {
 			
 				hashParamBeingRequested = key.trim().split(':').pop();
 			
@@ -149,9 +202,8 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 			});
 			
 			// process normal data hugs
-			this.view_response = this.view_response.replace(/\{\{(.*?)\}\}/ig, function(with_hugs, key){
-
-				return this.data[key.trim()];
+			leafEl.innerHTML = leafEl.innerHTML.replace(/\{\{(.*?)\}\}/ig, function(with_hugs, key){
+				return data[key.trim()];
 				
 			}.bind(this));
 		};
@@ -169,6 +221,72 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 				
 			}.bind(this));
 			
+		};
+		
+		
+		this.findEvents = function(leafEl) {
+			var event_types = [	'focus','blur','change','click','dblclick','error',
+								'keydown','keyup','keypress','load','contextmenu',
+								'mousedown','mouseup','mouseenter','mouseleave','mousemove',
+								'touchstart','touchmove','touchend','touchcancel',
+								'resize','scroll','submit','unload'];
+								
+			var leaves = Basil.util.getElements(leafEl);
+			var event, attr_str, params, func, func_str, leaf_attributes;
+			
+			Basil.util.each(leaves, function(key, leaf) {
+				leaf_attributes = leaf.attributes;
+
+				if (!leaf_attributes.length) return;
+				
+				Basil.util.each(leaf_attributes, function(index, attr) {
+					// tries to remove bsl-e- from the attr to test if in array
+					attr_str = attr.nodeName.split('-e-')[1];
+										
+					if (attr_str && (event = event_types.indexOf(attr_str)) > -1) {
+						func_str 	= attr.nodeValue ? attr.nodeValue.trim() : '';
+						func		= func_str.match(/^[a-zA-Z0-9_ ]+/)[0]; //func_str.match(/([a-zA-Z0-9_ ]+)\((.*?)\)/ig);
+						params		= func_str.match(/\((.*?)\)/)[1];
+						params		= params !== undefined ? params.split(',') : undefined;
+
+						// if provided in the leaf actions use this action
+						if (this.actions[func]) {
+							Basil.util.addEvent(leaf, event_types[event], this.actions[func], params);
+						}
+						
+						if (Basil.core.event_actions[func]) {
+							Basil.util.addEvent(leaf, event_types[event], Basil.core.event_actions[func], params);
+						}
+							
+					}
+				}.bind(this));
+				
+			}.bind(this));
+				
+		};
+		
+		
+		this.removeBasilAttributes = function() {
+		
+		};
+		
+		this.hideElement = function() {
+			if (Basil.core.settings.displayGradually) {
+				if (window.jQuery) $(this.element).hide();
+			} else {
+				this.element.style.visibility 	= 'hidden';
+				this.element.style.opacity		= 0;
+			}
+		};
+		
+		
+		this.showElement = function() {
+			if (Basil.core.settings.displayGradually) {
+				if (window.jQuery) $(this.element).fadeIn(Basil.core.settings.displaySpeed);
+			} else {
+				this.element.style.visibility 	= 'visible';
+				this.element.style.opacity		= 1;
+			}
 		};
 
 

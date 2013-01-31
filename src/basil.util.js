@@ -15,23 +15,31 @@ Basil.util = {
 	*/	
 		each: function(obj, func) {
 			for (var key in obj) {
+				if (key == 'length') continue;
 		
-			   if (obj.hasOwnProperty(key)) {
-			      var item = obj[key];
-			      
-			      if ((response = func(key, item))) return response;
-			   }
+				if (obj.hasOwnProperty(key)) {
+					var item = obj[key];
+					
+					if ((response = func(key, item))) return response;
+				}
 			}
 		},
 		
 		
+		getElements: function(el) {
+			
+			return Basil.util.getElementsByAttribute(el, '');	
+		},
+		
+		
 		getElementsByAttribute: function(el, attr) {
+			var attr_str = attr == '' ? '*' : '[' + attr + ']';
 						
 			if (window.jQuery) {
-				return $(el).find('['+attr+']').get();
+				return $(el).find(attr_str).get();
 			
 			} else if (window.MooTools) {
-				return el.getElements('['+attr+']');
+				return el.getElements(attr_str);
 			}
 			
 		},
@@ -57,6 +65,21 @@ Basil.util = {
 				el.set('html',html);
 			}
 			
+		},
+		
+		addEvent: function(el, event, func, data) {
+			
+			if (window.jQuery) {
+				$(el).on(event, function(e) {
+					if (data) func.apply(this, data);
+					else func(e);
+				});
+				return $(el);
+				
+			} else if (window.MooTools) {
+				if (data) return el.addEvent(event, func.apply(this, data));
+				else return el.addEvent(event, func);
+			}
 		}
 };
 
