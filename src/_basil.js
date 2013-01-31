@@ -19,12 +19,15 @@
 	//	Internal
 	// ----------------------------------------------------------------------
 	
+		// Utility Functions/methods, etc
+		util: {},
+		
+		// Logging methods, etc
+		log: {},
 		
 		core: {
-			// Utility Functions/methods, etc
-			util: {},
 			
-			events: {
+			event_actions: {
 				loadLeaf: function() {}
 			},
 			
@@ -50,10 +53,12 @@
 		},
 		
 		app: {
-			stems: {},
+			//stems: {},
 			leaves: {},
-			events: {}
+			actions: {}
 		},
+		
+		getStemParam: function(key) {},
 			
 	// ----------------------------------------------------------------------
 	//	External (for the user)
@@ -81,47 +86,61 @@
 //	Setup & Initialization
 // #############################################################################################################################
 
-	Basil.prepare = function() {
-		
-	}
-
-	Basil.run = function() {
-		
-		Basil.core.run.stem.init();
-		
-	}
+	// Default Settings
+	Basil.core.settings = {
+		debug: false,
+		paths: '/assets/javascript/app/stems/',
+		leaf_path_prefix: '/assets/javascript/app/leaves/'
+	};
 
 
-
-	Basil.core.run.stem.init = function() {
+	Basil.prepare = function(options) {
 		
-		// If no stems provided in config, FREAK OUT!
-		// alternatively, we could handle this error in the config method
-	
-		// figure out where we are (in hash?)
-		// take to default hash if necessary? or maybe "first stem"
-		
-		// Then trigger buildLeaf on that element?
-		
-		Basil.core.run.leaf.build(el);
-	}
-
-	Basil.core.run.leaf.build = function(leafEl) {
-	
-		var lu = Basil.core.run.leaf;
-	
-		/*lu.findViews(leafEl);
-			
-		lu.findDataFields(leafEl);
-
-		lu.findTriggers(leafEl);
-		
-		lu.findBehaviors(leafEl);
+		Basil.util.each(options, function(key, value) {
+			Basil.core.settings[key] = value;
+		});
 				
-		lu.findInputs(leafEl);*/
-
+		Basil.core.preflight();
+		
+		Basil.util.domReady(Basil.core.run.stem.init.bind(Basil.core.run.stem));
 	}
 
+
+
+Basil.core.preflight = function() {
+
+// ----------------------------------------------------------------------
+//	Check framework is included
+// ----------------------------------------------------------------------
+
+	if (!window.jQuery && !window.MooTools) {
+		if (typeof console) {
+			console.error('Basil currently depends on jQuery or MooTools to run');
+		}
+		return;
+	}
+	
+}
+
+
+Basil.addLeaf = function(leafFile,leafObject) {
+	
+	Basil.app.leaves[leafFile] = leafObject;
+	
+}
+
+
+
+
+//##########################################################################################################
+//##########################################################################################################
+//##########################################################################################################
+//##########################################################################################################
+//	Old
+//##########################################################################################################
+//##########################################################################################################
+//##########################################################################################################
+//##########################################################################################################
 
 //Basil.addEvent();
 
@@ -144,11 +163,6 @@ Basil.addLeafEvent('party.html','eventName',function() {});
 */
 
 
-Basil.settings.defaults = {
-	debug: false,
-	paths: '/assets/javascript/app/stems/',
-	leaf_path_prefix: '/assets/javascript/app/leaves/'
-}
 
 
 
