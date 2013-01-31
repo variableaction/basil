@@ -126,7 +126,7 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 			
 			Basil.util.html(this.element, this.view_response);
 			
-			this.findLeaves();
+			this.findLeaves(this.element);
 			
 			this.removeBasilAttributes();
 			
@@ -139,10 +139,16 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 		
 		this.findHugs = function() {
 			
-			// We can't replace hug contents in loop items yet though, right?
-			// They need to be looped through first?
+			// process hash variables in hugs
+			this.view_response = this.view_response.replace(/\{\{hash:(.*?)\}\}/g, function(hug, key) {
 			
-			// or maybe loops need processed with their hugs before hugs everywhere else get parsed
+				hashParamBeingRequested = key.trim().split(':').pop();
+			
+				return Basil.core.run.stem.hashParams[hashParamBeingRequested];
+				
+			});
+			
+			// process normal data hugs
 			this.view_response = this.view_response.replace(/\{\{(.*?)\}\}/ig, function(with_hugs, key){
 
 				return this.data[key.trim()];
