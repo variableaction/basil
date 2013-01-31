@@ -7,14 +7,14 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 		this.element 	= leafEl;
 		this.file 		= leafFile;
 		this.data		= undefined;
-		this.data_url	= undefined;
+		this.resource	= undefined;
 		
 		this.dataready 	= false;
 		this.htmlready 	= false;
 		
 		var ajax 		= Basil.util.ajax;
 		
-		// if the leaf exists in app, add the actions and the data_url
+		// if the leaf exists in app, add the actions and the resource
 		if (Basil.app.leaves[this.file]) {
 			Basil.util.each(Basil.app.leaves[this.file], function(name, obj) {
 				this[name] = obj;
@@ -35,13 +35,13 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 			//this.applyEvents(leafEl);
 
 			
-			if (typeof this.data_url == 'string') {
+			if (typeof this.resource == 'string') {
 				
 				// Check for hug in data, if there, fill it in
 					// if it is 'hash:param', get it from Basil.core.run.stem.hashParams
 				
 				// data: '/+/user.json?id={{hash:id}}',			// {{hash:*}}
-				var new_data_url = this.data_url.replace(/\{\{(.*?)\}\}/g, function(hug, key) {
+				var new_resource = this.resource.replace(/\{\{(.*?)\}\}/g, function(hug, key) {
 				
 					hashParamBeingRequested = key.trim().split(':').pop();
 				
@@ -50,7 +50,7 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 				});
 				
 				//var leafInstanceDataLoaded = {};
-				ajax.getJSON(new_data_url,{
+				ajax.getJSON(new_resource,{
 					
 					callback: function(response) {
 						//Basil.util.elData(el,'data',leafInstanceDataLoaded);
@@ -133,8 +133,6 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 			
 			this.findLoops(this.element);
 			
-			this.findIfs(this.element);
-
 			this.findHugs(this.element);
 			
 			this.findLeaves(this.element);
