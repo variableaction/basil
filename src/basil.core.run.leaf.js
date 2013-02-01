@@ -293,36 +293,50 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 										
 					if (attr_str && (event = event_types.indexOf(attr_str)) > -1) {
 						func_str 	= attr.nodeValue ? attr.nodeValue.trim() : '';
-						func		= func_str.match(/^[a-zA-Z0-9_ ]+/)[0]; //func_str.match(/([a-zA-Z0-9_ ]+)\((.*?)\)/ig);
-						params		= func_str.match(/\((.*?)\)/);
 						
-						if (params && params[1]) {
-							var new_params = [];
-							Basil.util.each(params[1].split(','), function(index, param) {
-								// store the string
-								if (param.search('\'' == 0)) new_params.push(param.substr(1, param.length -2));
-							});
-							params = new_params;
-						}
+						funcs		= func_str.match(/[a-zA-Z0-9_]+(\(.*\))?/ig);
 
-						// if provided in the leaf actions use this action
-						if (this.actions[func]) {
-							if (event_types[event] == 'load') this.actions[func].apply(this, params);
+						Basil.util.each(funcs, function(num, func_str) {
 							
-							Basil.util.addEvent(leaf, event_types[event], this.actions[func], params);
-						}
+							func		= func_str.match(/^[a-zA-Z0-9_ ]+/)[0];
+							params		= func_str.match(/\((.*?)\)/);
+							
+							if (params && params[1]) {
+								var new_params = [];
+								Basil.util.each(params[1].split(','), function(index, param) {
+									// store the string
+									if (param.search('\'' == 0)) new_params.push(param.substr(1, param.length -2));
+								});
+								params = new_params;
+							}
+	
+							// if provided in the leaf actions use this action
+							if (this.actions[func]) {
+
+								if (event_types[event] == 'load') this.actions[func].apply(this, params);
+								
+								Basil.util.addEvent(leaf, event_types[event], this.actions[func], params);
+							}
+							
+							else if (Basil.app.actions[func]) {
+								if (event_types[event] == 'load') Basil.app.actions[func].apply(this, params);
+								
+								Basil.util.addEvent(leaf, event_types[event], Basil.app.actions[func], params);
+							}
+							
+							else if (Basil.core.event_actions[func]) {
+								if (event_types[event] == 'load') Basil.core.event_actions[func].apply(this, params);
+								
+								Basil.util.addEvent(leaf, event_types[event], Basil.core.event_actions[func], params);
+							}
+							
+						}.bind(this));
+												
+						/*
 						
-						else if (Basil.app.actions[func]) {
-							if (event_types[event] == 'load') Basil.app.actions[func].apply(this, params);
-							
-							Basil.util.addEvent(leaf, event_types[event], Basil.app.actions[func], params);
-						}
 						
-						else if (Basil.core.event_actions[func]) {
-							if (event_types[event] == 'load') Basil.core.event_actions[func].apply(this, params);
-							
-							Basil.util.addEvent(leaf, event_types[event], Basil.core.event_actions[func], params);
-						}
+						
+						*/
 							
 					}
 				}.bind(this));
