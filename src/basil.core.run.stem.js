@@ -3,85 +3,102 @@
 
 Basil.core.run.stem = new function() {
 	
-		// First time stem launch / hash listener setup, etc
-		this.init = function() {
-			
+	// First time stem launch / hash listener setup, etc
+	this.init = function() {
 		
-			if (!this.findDefaultStem()) this.exception('No stems found');
-
-			// sets the location if no hash is present or no stem for location is found
-			var leafFile = this.locate();
-			
-			this.setupHashListener();
-			
-			// cache the stem wrapper element "<div bsl-app></div>"
-			this.stemWrapper = Basil.util.getElementsByAttribute(document.body, 'bsl-app')[0];
-			
-			// Once we find the stem, pass the main-app-element to leaf.build()
-			this.loadStem(leafFile);
-		
-		};
-		
-		
-		this.findStemLeaf = function() {
-			// if we don't find a stem for current location use default stem
-			if (!Basil.core.settings.stems[this.hashPath]) window.location.hash = '#!' + Basil.core.settings.stems[this.defaultStem];
-			
-			// else use the stem for current place
-			else return Basil.core.settings.stems[this.hashPath];
-		}
-		
-		
-		this.setupHashListener = function() {
-				
-			// if not on internet explorer use the built in hash listener
-			if (("onhashchange" in window) && !(window.msie) && !(window.ie)) {
-				window.onhashchange = this.hashChangeEvent.bind(this);
-			}
-			
-			// if ie, we have to do a makeshift hash listener, not desirable
-			else {
-		        var prevHash = window.location.hash;
 	
-		        window.setInterval(function () {
-		        	if (window.location.hash != prevHash) {
-		        		prevHash = window.location.hash;       
-		        		this.hashChangeEvent();
-		        	}
-		        }, 100);
-		    }
-		}
-		
-		
-		// on hash change
-		
-		this.hashChangeEvent = function(e) {
-			if (e.oldURL.search('#') < 0) return;
-			// Trigger user, before hash change
-			// Trigger leaf, before hash change
-			
-			// store params if exist in matched path (grab them from actual hash)
-			
-			// if no stem
-			
-			var newStemLeaf = this.locate();
-			
-			// Load that stem
-			this.loadStem(newStemLeaf);
-			
-		}
-		
-		
-		// Find stem or redirect
-		
-		// load stem?
-		
-		this.loadStem = function(stemLeaf) {
+		if (!this.findDefaultStem()) this.exception('No stems found');
 
-			//var el = Basil.util.getElementsByAttribute('bsl-app')[0];
-			new Basil.core.run.leaf(this.stemWrapper, stemLeaf);
-			
+		// sets the location if no hash is present or no stem for location is found
+		var leafFile = this.locate();
+		
+		this.setupHashListener();
+		
+		// cache the app and stem wrapper element "<div bsl-app></div>"
+		this.appWrapper 	= Basil.util.getElementsByAttribute(document.body, 'bsl-app')[0];
+					
+		// Once we find the stem, pass the main-app-element to leaf.build()
+		new Basil.core.run.leaf(this.appWrapper, false);
+		
+		this.stemWrapper 	= Basil.util.getElementsByAttribute(document.body, 'bsl-stem')[0];
+		
+		// if no stem is found inject it into the dom inside the app
+		if (!this.stemWrapper) {
+			this.appWrapper.innerHTML = '<div bsl-stem></div>';
+			this.stemWrapper 	= Basil.util.getElementsByAttribute(document.body, 'bsl-stem')[0];
+			Basil.log.warn('No stem wrapper found, inserting into app wrapper.');
 		}
+		
+		// Load stem
+		this.loadStem(leafFile);
+	
+	};
+		
+		
+	this.findStemLeaf = function() {
+		// if we don't find a stem for current location use default stem
+		if (!Basil.core.settings.stems[this.hashPath]) window.location.hash = '#!' + Basil.core.settings.stems[this.defaultStem];
+		
+		// else use the stem for current place
+		else return Basil.core.settings.stems[this.hashPath];
+	}
+		
+		
+	this.setupHashListener = function() {
+			
+		// if not on internet explorer use the built in hash listener
+		if (("onhashchange" in window) && !(window.msie) && !(window.ie)) {
+			window.onhashchange = this.hashChangeEvent.bind(this);
+		}
+		
+		// if ie, we have to do a makeshift hash listener, not desirable
+		else {
+	        var prevHash = window.location.hash;
+
+	        window.setInterval(function () {
+	        	if (window.location.hash != prevHash) {
+	        		prevHash = window.location.hash;       
+	        		this.hashChangeEvent();
+	        	}
+	        }, 100);
+	    }
+	}
+		
+		
+	// on hash change
+	
+	this.hashChangeEvent = function(e) {
+		if (e.oldURL.search('#') < 0) return;
+		
+		if (Basil.core.run.stem.ignoreHash) {
+			Basil.core.run.stem.ignoreHash = false;
+			return;
+		}
+		// Trigger user, before hash change
+		// Trigger leaf, before hash change
+		
+		// store params if exist in matched path (grab them from actual hash)
+		
+		// if no stem
+		
+		var newStemLeaf = this.locate();
+		
+		// Load that stem
+		this.loadStem(newStemLeaf);
+		
+	}
+	
+	
+	// Find stem or redirect
+	
+	// load stem?
+	
+	this.loadStem = function(stemLeaf) {
+	
+		//var el = Basil.util.getElementsByAttribute('bsl-app')[0];
+		new Basil.core.run.leaf(this.stemWrapper, stemLeaf);
+		
+	}
 		
 	
 	/***

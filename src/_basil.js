@@ -27,10 +27,7 @@
 		
 		core: {
 			
-			event_actions: {
-				loadLeaf: function() {},
-				alert: function(str) { alert(str); }
-			},
+			event_actions: {},
 			
 			// Instances of data,etc being stored?
 			active: {
@@ -73,7 +70,7 @@
 		init: function() {},
 		
 		// User setup methods; should all be done before init
-		addEvent:	function() {},
+		addAction:	function() {},
 		addLeaf:	function() {},
 		loadLeaf:	function(el,leafFile) {}
 		
@@ -133,7 +130,11 @@ Basil.addLeaf = function(leafFile,leafObject) {
 	
 }
 
-
+Basil.addAction = function(eventName, func) {
+	
+	Basil.app.actions[eventName] = func;
+	
+}
 
 
 //##########################################################################################################

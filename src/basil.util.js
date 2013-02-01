@@ -26,11 +26,30 @@ Basil.util = {
 		},
 		
 		
+		getElementBySelector: function(selector) {
+			if (window.jQuery) {
+				return $(selector).get(0);
+			
+			} else if (window.MooTools) {
+				return $$(selector)[0];
+			}
+		},
+		
+		getElementsBySelector: function(selector) {
+			if (window.jQuery) {
+				return $(selector).get();
+			
+			} else if (window.MooTools) {
+				return $$(selector);
+			}
+		},
+		
+		
 		getElements: function(el) {
 			
 			return Basil.util.getElementsByAttribute(el, '');	
 		},
-		
+				
 		
 		getElementsByAttribute: function(el, attr) {
 			var attr_str = attr == '' ? '*' : '[' + attr + ']';
@@ -116,7 +135,7 @@ Basil.util.ajax = {
 					async		: !options.async,
 					
 					success		: function(data, textStatus, jqXHR) {
-						Basil.log.print('AJAX SUCCESS', data);
+						Basil.log.print('AJAX SUCCESS', {responseData: data});
 						if (options.callback && typeof options.callback == 'function') options.callback(data);
 					},
 					

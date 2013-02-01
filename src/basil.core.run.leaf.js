@@ -8,6 +8,7 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 		this.file 		= leafFile;
 		this.data		= undefined;
 		this.resource	= undefined;
+		this.actions	= {};
 		
 		this.dataready 	= false;
 		this.htmlready 	= false;
@@ -15,17 +16,37 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 		var ajax 		= Basil.util.ajax;
 		
 		// if the leaf exists in app, add the actions and the resource
-		if (Basil.app.leaves[this.file]) {
-			Basil.util.each(Basil.app.leaves[this.file], function(name, obj) {
-				this[name] = obj;
-			}.bind(this));
+		
+		if (this.file) {
+		
+			var leafNameForCustomObjects;
+			if (this.file.search(/\?/) > -1) {
+				leafNameForCustomObjects = this.file.substr(0,this.file.search(/\?/));
+			} else {
+				leafNameForCustomObjects = this.file;
+			}
+			
+			if (Basil.app.leaves[leafNameForCustomObjects]) {
+				Basil.util.each(Basil.app.leaves[leafNameForCustomObjects], function(name, obj) {
+					this[name] = obj;
+				}.bind(this));
+			}
 		}
 		
 		this.build = function() {
 		
+			console.log('kl;asdjfkl;asdjfkl;sajadfks;');
+			console.log(this.file);
+			console.log(this);
+
+			if (!this.file) {
+				this.process();
+				return;
+			}
+		
 			// immediately hide the element so we can load everything without looking janky
 			this.hideElement();
-						
+			
 			
 			// Check for destrcut events on each element?
 			// Run those actions
@@ -33,6 +54,7 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 						
 			// Apply events
 			//this.applyEvents(leafEl);
+			
 
 			
 			if (typeof this.resource == 'string') {
@@ -154,44 +176,69 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 			if (!leaves.length) return;
 			
 			// for each leaf with a loop
-			Basil.util.each(leaves, function(index, leaf) {
+			Basil.util.each(leaves, function(index, loop) {
 			
 				// get the data to be looping
 				// items
 				//!! FUTURE use cases:
 				// items as item 
-				data_key 	= leaf.getAttribute('bsl-loop');
+				data_key 	= loop.getAttribute('bsl-loop');
 				
-				// if the data exists then loop through the data
-				if (this.data[data_key]) {
+				// If the resource being requested 
+				if (data_key.search('resource:') == 0) {
+					var resource = data_key.split(':').pop();
 					
-					// loops through all the data
-					Basil.util.each(this.data[data_key], function(index, obj) {
+					ajax.getJSON(resource, {
+						callback: function(data) {
+							if (data) this.processLoops(loop, data);
+						}.bind(this),
+						async: true
+					});
 					
-						// clones the loop node to insert into dom
-						var loop_el	= leaf.cloneNode(true);
-						
-						// finds any data hugs
-						this.findHugs(loop_el, obj);
-						
-						// inserts node into the dom
-						leaf.parentNode.appendChild(loop_el);
-					}.bind(this));
+				
+				// else if the data exists then loop through the data
+				} else if (this.data[data_key]) {
+					
+					this.processLoops(loop, this.data[data_key]);
 					
 				}
-				
-				// removes the actual loop node from the dom
-				leaf.parentNode.removeChild(leaf);
 			}.bind(this));
+			
+		};
+		
+		this.processLoops = function(loop, data) {	
+			
+			//var loopCount = 0;
+			
+			
+			// create template div to copy			
+			templateHTML = loop.innerHTML;
+			
+			var templateCopy, newHTML = '';
+
+			// loops through all the data
+			Basil.util.each(data, function(index, obj) {
+			
+				// finds any data hugs
+				newHTML += this.findHugs(templateHTML, obj);
+										
+				//loopCount++;
+				//Basil.log.print(loopCount);
+								
+			}.bind(this));
+			
+			loop.innerHTML = newHTML;
 			
 		};
 
 
 		this.findHugs = function(leafEl, data) {
 			if (!data) data = this.data;
+			if (typeof leafEl != 'string') var innerHTML = leafEl.innerHTML;
+			else var innerHTML = leafEl;
 			
 			// process hash variables in hugs
-			leafEl.innerHTML = leafEl.innerHTML.replace(/\{\{hash:(.*?)\}\}/g, function(hug, key) {
+			innerHTML = innerHTML.replace(/\{\{hash:(.*?)\}\}/g, function(hug, key) {
 			
 				hashParamBeingRequested = key.trim().split(':').pop();
 			
@@ -200,11 +247,15 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 			});
 			
 			// process normal data hugs
-			leafEl.innerHTML = leafEl.innerHTML.replace(/\{\{(.*?)\}\}/ig, function(with_hugs, key){
+			innerHTML = innerHTML.replace(/\{\{(.*?)\}\}/ig, function(with_hugs, key){
 				return data[key.trim()];
 				
 			}.bind(this));
+			
+			if (typeof leafEl == 'string') return innerHTML;
+			else leafEl.innerHTML = innerHTML;
 		};
+		
 		
 		
 		this.findLeaves = function(leafEl) {
@@ -229,6 +280,9 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 								'touchstart','touchmove','touchend','touchcancel',
 								'resize','scroll','submit','unload'];
 								
+			// load
+			// also need to add event in the future contentsloaded
+								
 			var leaves = Basil.util.getElements(leafEl);
 			var event, attr_str, params, func, func_str, leaf_attributes;
 			
@@ -244,15 +298,33 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 					if (attr_str && (event = event_types.indexOf(attr_str)) > -1) {
 						func_str 	= attr.nodeValue ? attr.nodeValue.trim() : '';
 						func		= func_str.match(/^[a-zA-Z0-9_ ]+/)[0]; //func_str.match(/([a-zA-Z0-9_ ]+)\((.*?)\)/ig);
-						params		= func_str.match(/\((.*?)\)/)[1];
-						params		= params !== undefined ? params.split(',') : undefined;
+						params		= func_str.match(/\((.*?)\)/);
+						
+						if (params && params[1]) {
+							var new_params = [];
+							Basil.util.each(params[1].split(','), function(index, param) {
+								// store the string
+								if (param.search('\'' == 0)) new_params.push(param.substr(1, param.length -2));
+							});
+							params = new_params;
+						}
 
 						// if provided in the leaf actions use this action
 						if (this.actions[func]) {
+							if (event_types[event] == 'load') this.actions[func].apply(this, params);
+							
 							Basil.util.addEvent(leaf, event_types[event], this.actions[func], params);
 						}
 						
-						if (Basil.core.event_actions[func]) {
+						else if (Basil.app.actions[func]) {
+							if (event_types[event] == 'load') Basil.app.actions[func].apply(this, params);
+							
+							Basil.util.addEvent(leaf, event_types[event], Basil.app.actions[func], params);
+						}
+						
+						else if (Basil.core.event_actions[func]) {
+							if (event_types[event] == 'load') Basil.core.event_actions[func].apply(this, params);
+							
 							Basil.util.addEvent(leaf, event_types[event], Basil.core.event_actions[func], params);
 						}
 							
