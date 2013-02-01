@@ -5,17 +5,23 @@ Basil.core.run.stem = new function() {
 	
 	// First time stem launch / hash listener setup, etc
 	this.init = function() {
+		// cache the app and stem wrapper element "<div bsl-app></div>"
+		this.appWrapper 	= Basil.util.getElementsByAttribute(document.body, 'bsl-app')[0];
 		
+		if (!this.appWrapper) {
+			Basil.log.warn('No bsl-app detected!');
+			return;
+		}
 	
-		if (!this.findDefaultStem()) this.exception('No stems found');
+		if (!this.findDefaultStem()) {
+			Basil.log.exception('No stems found');
+			return;
+		}
 
 		// sets the location if no hash is present or no stem for location is found
 		var leafFile = this.locate();
 		
 		this.setupHashListener();
-		
-		// cache the app and stem wrapper element "<div bsl-app></div>"
-		this.appWrapper 	= Basil.util.getElementsByAttribute(document.body, 'bsl-app')[0];
 					
 		// Once we find the stem, pass the main-app-element to leaf.build()
 		new Basil.core.run.leaf(this.appWrapper, false);

@@ -34,10 +34,6 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 		}
 		
 		this.build = function() {
-		
-			console.log('kl;asdjfkl;asdjfkl;sajadfks;');
-			console.log(this.file);
-			console.log(this);
 
 			if (!this.file) {
 				this.process();
