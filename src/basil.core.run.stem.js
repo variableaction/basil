@@ -125,7 +125,10 @@ Basil.core.run.stem = new function() {
 			}
 			
 			
-			var foundPath = undefined;
+			var foundPath = Basil.core.settings.stems[hash];
+			
+			if (foundPath) return foundPath;
+			
 			var hashParts =  hash.replace(/(^\/|\/$)/g, '').split('/');
 			
 			foundPath = Basil.util.each(Basil.core.settings.stems, function(stemHashPath,leafFile) {

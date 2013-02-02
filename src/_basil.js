@@ -108,6 +108,14 @@ var LOG_OPENER = '# ';
 		
 		Basil.util.domReady(Basil.core.run.stem.init.bind(Basil.core.run.stem));
 	}
+	
+	
+	Basil.addStems = function(options) {
+		
+		Basil.util.each(options, function(key, value) {
+			Basil.core.settings.stems[key] = value;
+		});
+	}
 
 
 

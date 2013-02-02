@@ -1,0 +1,9 @@
+<h1>Users List</h1>
+
+<div bsl-loop="resource:data/users/all.json">
+	
+	<div class="user">
+		<a href="#!/users/{{id}}/">{{id}} - {{name}}</a>
+	</div>
+	
+</div>

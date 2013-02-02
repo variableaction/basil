@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Basil Example 2 - Basic Template Setup</title>
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+		<!--<script src="//ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>-->
+		
+		
+		
+		<script src="../../basil.min.js"></script>
+		<script>
+		
+		// ----------------------------------------------------------------------
+		//	Basil setup, etc
+		// ----------------------------------------------------------------------
+		
+			
+			Basil.prepare({
+				leaf_path: 'ajax/leaves/',
+				stems: {
+					'/'					: 'home.html',
+					'/another-page/'	: 'another.html'
+				}
+			});
+			
+		</script>
+
+	</head>
+	<body>
+		<div bsl-app>
+			<div bsl-leaf="navigation.html"></div>
+			<div bsl-stem></div>
+		</div>
+	</body>
+</html>
