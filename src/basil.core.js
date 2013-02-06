@@ -5,10 +5,15 @@ Basil.core.event_actions = {
 			Basil.core.run.stem.ignoreHash = true;
 			window.location.hash = optionalHashAliasChange;
 		}
-		
+
 		var leafEl = Basil.util.getElementBySelector(targetEl);
 		
-		new Basil.core.run.leaf(leafEl, targetFile);
+		// cleans up every leaf inside the element
+		// removes itself from the dom to do it's cleanup
+		// passes back a skeleton clone
+		var elementToPass = Basil.core.run.stem.cleanLeaves(leafEl);
+		
+		new Basil.core.run.leaf(elementToPass, targetFile);
 	},
 	
 	alert: function(str) { alert(str); },

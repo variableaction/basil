@@ -1,22 +1,23 @@
 
+Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
+				
+		this.element 		= leafEl;
+		this.file 			= leafFile;
 
-Basil.core.run.leaf = function(leafEl,leafFile) {
+		this.data			= undefined;
+		this.resource		= undefined;
+		this.actions		= {};
+				
+		this.dataready 		= false;
+		this.htmlready 		= false;
 		
-		this.cleanup	= function() {};
 		
-		this.element 	= leafEl;
-		this.file 		= leafFile;
-		this.data		= undefined;
-		this.resource	= undefined;
-		this.actions	= {};
+		var ajax 			= Basil.util.ajax;
 		
-		this.dataready 	= false;
-		this.htmlready 	= false;
-		
-		var ajax 		= Basil.util.ajax;
+		this.load 			= function() {};
+		this.unload 		= function() {};
 		
 		// if the leaf exists in app, add the actions and the resource
-		
 		if (this.file) {
 		
 			var leafNameForCustomObjects;
@@ -31,6 +32,27 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 					this[name] = obj;
 				}.bind(this));
 			}
+		}
+		
+		this.storeLeafInstance = function() {
+		
+			// Set unique leaf ID
+			this.leaf_id 		= ++Basil.core.run.stem.leaf_unique_id_counter;
+			
+			// Set this parent ID if one was provided in arguments
+			this.leaf_parent_id = (leafParentLeafID > -1) ? leafParentLeafID : null;
+			
+			// Add this ID to parent's child IDs
+			if (Basil.core.run.stem.leaves[this.leaf_parent_id]) {
+				if ( Basil.core.run.stem.leaves[this.leaf_parent_id].childIDs === undefined ) {
+					Basil.core.run.stem.leaves[this.leaf_parent_id].childIDs = new Array;
+				}
+				Basil.core.run.stem.leaves[this.leaf_parent_id].childIDs.push(this.leaf_id);
+			}
+			
+			// Store leaf to instances Array (really an object)
+			Basil.core.run.stem.leaves[this.leaf_id] = this;
+			
 		}
 		
 		this.build = function() {
@@ -158,10 +180,30 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 			this.findEvents(this.element);
 			
 			//this.removeBasilAttributes();
+			this.load();
+			
+			this.addUnloadEvent();
 			
 			this.showElement();
 			
 		};
+		
+		
+		this.addUnloadEvent = function() {
+		
+			Basil.util.addEvent(this.element, 'destroy', function(e) {
+				// call the unload function to do any necessary cleanup
+				this.unload();
+			
+				// Remove leaf from leaf instances
+				delete Basil.core.run.stem.leaves[this.leaf_id];
+				
+				// stops propagation so this only gets called once
+				e.stopPropagation();
+				return false;
+			}.bind(this));
+			
+		}
 		
 		
 		this.findLoops = function(leafEl) {
@@ -255,14 +297,15 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 		
 		
 		this.findLeaves = function(leafEl) {
-						
+			
+			
 			var leaves = Basil.util.getElementsByAttribute(leafEl, 'bsl-leaf');
 
 			Basil.util.each(leaves,function(key,leaf) {
 				
 				var leafFile = leaf.getAttribute('bsl-leaf');
 				
-				if (leafFile != '') new Basil.core.run.leaf(leaf,leafFile);
+				if (leafFile != '') new Basil.core.run.leaf(leaf,leafFile,this.leaf_id);
 				
 			}.bind(this));
 			
@@ -278,67 +321,69 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 								
 			// load
 			// also need to add event in the future contentsloaded
-								
-			var leaves = Basil.util.getElements(leafEl);
-			var event, attr_str, params, func, func_str, leaf_attributes;
 			
+			// get all leaves
+			var leaves = Basil.util.getElements(leafEl);
+			
+			// store variables to help with memory
+			var event, leafEvent, params, func, funcString, leaf_attributes;
+			
+			// loop through each leaf looking for events
 			Basil.util.each(leaves, function(key, leaf) {
-				leaf_attributes = leaf.attributes;
 
-				if (!leaf_attributes.length) return;
+				// loop through all the attributes of the leaf
+				Basil.util.each(leaf.attributes, function(index, attr) {
 				
-				Basil.util.each(leaf_attributes, function(index, attr) {
 					// tries to remove bsl-e- from the attr to test if in array
-					attr_str = attr.nodeName.split('-e-')[1];
-										
-					if (attr_str && (event = event_types.indexOf(attr_str)) > -1) {
-						func_str 	= attr.nodeValue ? attr.nodeValue.trim() : '';
-						
-						funcs		= func_str.match(/[a-zA-Z0-9_]+(\(.*\))?/ig);
+					leafEvent = attr.nodeName.split('-e-')[1];
+				
+					// if there is an event attribute and it exists as a known 						
+					if (!leafEvent) return;
+					
+					// get the value inside the node
+					funcString 	= attr.nodeValue ? attr.nodeValue.trim() : '';
+					
+					funcs		= funcString.split(';');
 
-						Basil.util.each(funcs, function(num, func_str) {
-							
-							func		= func_str.match(/^[a-zA-Z0-9_ ]+/)[0];
-							params		= func_str.match(/\((.*?)\)/);
-							
-							if (params && params[1]) {
-								var new_params = [];
-								Basil.util.each(params[1].split(','), function(index, param) {
-									// store the string
-									if (param.search('\'' == 0)) new_params.push(param.substr(1, param.length -2));
-								});
-								params = new_params;
-							}
-	
-							// if provided in the leaf actions use this action
-							if (this.actions[func]) {
+					Basil.util.each(funcs, function(num, funcString) {
 
-								if (event_types[event] == 'load') this.actions[func].apply(this, params);
-								
-								Basil.util.addEvent(leaf, event_types[event], this.actions[func], params);
-							}
-							
-							else if (Basil.app.actions[func]) {
-								if (event_types[event] == 'load') Basil.app.actions[func].apply(this, params);
-								
-								Basil.util.addEvent(leaf, event_types[event], Basil.app.actions[func], params);
-							}
-							
-							else if (Basil.core.event_actions[func]) {
-								if (event_types[event] == 'load') Basil.core.event_actions[func].apply(this, params);
-								
-								Basil.util.addEvent(leaf, event_types[event], Basil.core.event_actions[func], params);
-							}
-							
-						}.bind(this));
-												
-						/*
+						split 		= funcString.split('(');
+						func 		= split[0].trim();
+						params		= split[1] ? split[1].split(')').shift() : '';
 						
-						
-						
-						*/
+						if (params) {
+							var new_params = [];
+
+							Basil.util.each(params.split(','), function(index, param) {
+								// store the string
+								if (param.search('\'') == 0) new_params.push(param.substr(1, param.length -2));
+								else if (param == 'this') new_params.push(leaf);
+							});
+							params = new_params;
+						}
+
+						// if provided in the leaf actions use this action
+						if (this.actions[func]) {
+
+							if (leafEvent == 'load') this.actions[func].apply(this, params);
 							
-					}
+							Basil.util.addEvent(leaf, leafEvent, this.actions[func], params);
+						}
+						
+						else if (Basil.app.actions[func]) {
+							if (leafEvent == 'load') Basil.app.actions[func].apply(this, params);
+							
+							Basil.util.addEvent(leaf, leafEvent, Basil.app.actions[func], params);
+						}
+						
+						else if (Basil.core.event_actions[func]) {
+							if (leafEvent == 'load') Basil.core.event_actions[func].apply(this, params);
+							
+							Basil.util.addEvent(leaf, leafEvent, Basil.core.event_actions[func], params);
+						}
+						
+					}.bind(this));
+					
 				}.bind(this));
 				
 			}.bind(this));
@@ -369,6 +414,8 @@ Basil.core.run.leaf = function(leafEl,leafFile) {
 			}
 		};
 
+		// stores the leaf id, the parent id of this leaf and adds to the list of leaves in stem
+		this.storeLeafInstance();
 
 		this.build();
 };

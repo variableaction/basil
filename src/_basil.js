@@ -30,6 +30,9 @@ var LOG_OPENER = '# ';
 		
 		core: {
 			
+			// Framework method adapaters
+			adapter: {},
+			
 			event_actions: {},
 			
 			// Instances of data,etc being stored?
@@ -72,10 +75,13 @@ var LOG_OPENER = '# ';
 		// Starts basil processing
 		init: function() {},
 		
+		// pre hash change event
+		onHashChange: function() {},
+		
 		// User setup methods; should all be done before init
 		addAction:	function() {},
 		addLeaf:	function() {},
-		loadLeaf:	function(el,leafFile) {}
+		leaf:		function() {}
 		
 		// FUTURE
 		//addLeafEvent:	function() {},
@@ -121,16 +127,27 @@ var LOG_OPENER = '# ';
 
 Basil.core.preflight = function() {
 
+	if (window.jQuery) {
+		Basil.core.framework = 'jQuery';
+	
+	} else if (window.MooTools) {
+		Basil.core.framework = 'MooTools';
+	} else {
+		Basil.core.framework = false;
+		Basil.log.error('Basil currently depends on jQuery or MooTools');
+	}
+
 // ----------------------------------------------------------------------
 //	Check framework is included
 // ----------------------------------------------------------------------
 
-	if (!window.jQuery && !window.MooTools) {
+	if (!Basil.core.framework) {
 		if (typeof console) {
 			console.error('Basil currently depends on jQuery or MooTools to run');
 		}
 		return;
 	}
+	
 	
 }
 

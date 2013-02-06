@@ -37,5 +37,13 @@ Basil.log = {
 			}
 		},
 	
+	/***
+		ALIAS for exception
+	*/	
+	
+		error: function() {
+			Basil.log.exception.apply(this,arguments);
+		}
+	
 	
 };

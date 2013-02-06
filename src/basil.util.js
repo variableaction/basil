@@ -8,103 +8,78 @@
 #############################################################################################################################
 */
 
+
 Basil.util = {
+
+
+//##########################################################################################################
+//	Custom Basil Utility Methods
+//##########################################################################################################
+
+/***
+	Loops through an object calling the passed in function
+*/	
+	each: function(obj, func) {
+		for (var key in obj) {
+			if (key == 'length') continue;
 	
-	/***
-		Loops through an object calling the passed in function
-	*/	
-		each: function(obj, func) {
-			for (var key in obj) {
-				if (key == 'length') continue;
-		
-				if (obj.hasOwnProperty(key)) {
-					var item = obj[key];
-					
-					if ((response = func(key, item))) return response;
-				}
-			}
-		},
-		
-		
-		getElementBySelector: function(selector) {
-			if (window.jQuery) {
-				return $(selector).get(0);
-			
-			} else if (window.MooTools) {
-				return $$(selector)[0];
-			}
-		},
-		
-		getElementsBySelector: function(selector) {
-			if (window.jQuery) {
-				return $(selector).get();
-			
-			} else if (window.MooTools) {
-				return $$(selector);
-			}
-		},
-		
-		
-		getElements: function(el) {
-			
-			return Basil.util.getElementsByAttribute(el, '');	
-		},
+			if (obj.hasOwnProperty(key)) {
+				var item = obj[key];
 				
-		
-		getElementsByAttribute: function(el, attr) {
-			var attr_str = attr == '' ? '*' : '[' + attr + ']';
-						
-			if (window.jQuery) {
-				return $(el).find(attr_str).get();
-			
-			} else if (window.MooTools) {
-				return el.getElements(attr_str);
-			}
-			
-		},
-		
-		domReady: function(func) {
-			
-			if (window.jQuery) {
-				$(func);
-			
-			} else if (window.MooTools) {
-				window.addEvent('domready', func);
-			}
-			
-		},
-		
-		
-		html: function(el, html) {
-			
-			if (window.jQuery) {
-				$(el).html(html);
-			
-			} else if (window.MooTools) {
-				el.set('html',html);
-			}
-			
-		},
-		
-		addEvent: function(el, event, func, data) {
-			
-			if (window.jQuery) {
-				$(el).on(event, function(e) {
-					if (data) func.apply(this, data);
-					else func(e);
-				});
-				return $(el);
-				
-			} else if (window.MooTools) {
-				if (data) return el.addEvent(event, func.apply(this, data));
-				else return el.addEvent(event, func);
+				if ((response = func(key, item))) return response;
 			}
 		}
-};
+	},
 
 
-Basil.util.ajax = {
+	getElements: function(el) {
 	
+		// Not sure if this next line is correct, but it is making things work...
+		//el = el || document.body;
+		
+		
+		return Basil.util.getElementsByAttribute(el, '');	
+	
+	},
+
+//##########################################################################################################
+//	Framework-proxied-methods
+//##########################################################################################################
+
+
+	getElementBySelector: function() {
+		return Basil.core.adapter[Basil.core.framework].getElementBySelector.apply(this, arguments);
+	},
+	
+	getElementsBySelector: function() {
+		return Basil.core.adapter[Basil.core.framework].getElementsBySelector.apply(this, arguments);
+	},
+		
+	getElementsByAttribute: function() {
+		return Basil.core.adapter[Basil.core.framework].getElementsByAttribute.apply(this, arguments);
+	},
+	
+	domReady: function() {
+		return Basil.core.adapter[Basil.core.framework].domReady.apply(this, arguments);	
+	},
+	
+	html: function() {
+		return Basil.core.adapter[Basil.core.framework].html.apply(this, arguments);
+	},
+		
+	addEvent: function(el, event, func, data) {
+		return Basil.core.adapter[Basil.core.framework].addEvent.apply(this, arguments);
+	},
+	
+	fireEvent: function(el, event) {
+		return Basil.core.adapter[Basil.core.framework].fireEvent.apply(this, arguments);	
+	},	
+	
+//##########################################################################################################
+//	Ajax methods
+//##########################################################################################################
+
+	ajax: {
 	/***
 		Description:	request
 		@param: 		url (STRING) The url to make a post request to
@@ -124,54 +99,9 @@ Basil.util.ajax = {
 				defaults[key] = value;
 			});
 			
-			options = defaults;
-			
-			if (window.jQuery) {
-								
-				$.ajax({
-					dataType	: options.dataType,
-					url			: url,
-					type		: options.type,
-					async		: !options.async,
-					
-					success		: function(data, textStatus, jqXHR) {
-						Basil.log.print('AJAX SUCCESS', {responseData: data});
-						if (options.callback && typeof options.callback == 'function') options.callback(data);
-					},
-					
-					error		: function(jqXHR, textStatus, errorThrown) {
-						//"timeout", "error", "abort", and "parsererror"
-						Basil.log.exception('AJAX ERROR', jqXHR, textStatus, errorThrown);
-					},
-					
-					beforeSend	: function(jqXHR) {
-						Basil.log.print('AJAX REQUEST', url, options.data);
-					}
-					
-				});
-				
-				
-			} else if (window.MooTools) {
-				new Request({
-					url: url,
-					format: options.dataType,
-					async: !options.async,
-					onRequest: function(response) {
-						Basil.log.print(url, data);
-					},
-					onSuccess: function(json, text) {
-						Basil.log.print('AJAX SUCCESS', json);
-						if (options.callback && typeof options.callback == 'function') options.callback(json);
-					},
-					onError: function(response) {
-						Basil.log.exception('AJAX ERROR', response);
-					},
-					onFailure: function(response) {
-						Basil.log.exception('AJAX FAILURE', response);
-					}
-				}).post(options.data);
-			
-			}
+			arguments[1] = defaults;
+						
+			Basil.core.adapter[Basil.core.framework].ajax.apply(this, arguments);
 		},
 	
 	/***
@@ -192,5 +122,5 @@ Basil.util.ajax = {
 			options.dataType = 'JSON'
 			Basil.util.ajax.request(url, options);
 		}
-}
-
+	}
+};
