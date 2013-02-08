@@ -43,7 +43,24 @@ Basil.log = {
 	
 		error: function() {
 			Basil.log.exception.apply(this,arguments);
+		},
+		
+		
+		
+		as: function() {
+			if (Basil.log.available()) {
+				
+				// Check the log level for category is >= than level of log being passed in
+				
+				// pop off first two arguments: category, level
+				
+				// print the rest
+				for (arg in arguments) console.warn(arguments[arg]);
+			
+			}
 		}
+		
+		
 	
 	
 };

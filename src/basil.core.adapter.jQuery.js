@@ -39,6 +39,14 @@
 			
 		},
 		
+		createElementFromString: function(str) {
+			return $(str).get(0);	
+		},
+		
+		insertElementAfter: function(el, after) {
+			$(after).after($(el));
+			return el;
+		},
 		
 		domReady: function(func) {
 			$(func);
@@ -48,10 +56,17 @@
 			$(el).html(html);
 		},
 		
+		css: function(el, style, value) {
+			return $(el).css(style, value);	
+		},
+		
 		addEvent: function(el, event, func, data) {
 			$(el).on(event, function(e) {
-				if (data) func.apply(this, data);
-				else func(e);
+				if (data) {
+					data.unshift(e);
+					func.apply(this, data);
+					data.shift();
+				} else func(e);
 			});
 			return $(el);
 		},

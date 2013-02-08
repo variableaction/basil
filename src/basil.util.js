@@ -59,12 +59,24 @@ Basil.util = {
 		return Basil.core.adapter[Basil.core.framework].getElementsByAttribute.apply(this, arguments);
 	},
 	
+	createElementFromString: function() {
+		return Basil.core.adapter[Basil.core.framework].createElementFromString.apply(this, arguments);
+	},
+	
+	insertElementAfter: function() {
+		return Basil.core.adapter[Basil.core.framework].insertElementAfter.apply(this, arguments);
+	},
+	
 	domReady: function() {
 		return Basil.core.adapter[Basil.core.framework].domReady.apply(this, arguments);	
 	},
 	
 	html: function() {
 		return Basil.core.adapter[Basil.core.framework].html.apply(this, arguments);
+	},
+	
+	css: function() {
+		return Basil.core.adapter[Basil.core.framework].css.apply(this, arguments);
 	},
 		
 	addEvent: function(el, event, func, data) {

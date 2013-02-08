@@ -20,12 +20,7 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 		// if the leaf exists in app, add the actions and the resource
 		if (this.file) {
 		
-			var leafNameForCustomObjects;
-			if (this.file.search(/\?/) > -1) {
-				leafNameForCustomObjects = this.file.substr(0,this.file.search(/\?/));
-			} else {
-				leafNameForCustomObjects = this.file;
-			}
+			var leafNameForCustomObjects = this.file.split('?').shift();
 			
 			if (Basil.app.leaves[leafNameForCustomObjects]) {
 				Basil.util.each(Basil.app.leaves[leafNameForCustomObjects], function(name, obj) {

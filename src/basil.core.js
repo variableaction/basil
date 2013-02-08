@@ -1,6 +1,6 @@
 
 Basil.core.event_actions = {
-	leaf: function(targetEl, targetFile, optionalHashAliasChange) {
+	leaf: function(e, targetEl, targetFile, optionalHashAliasChange) {
 		if (optionalHashAliasChange) {
 			Basil.core.run.stem.ignoreHash = true;
 			window.location.hash = optionalHashAliasChange;
@@ -16,9 +16,9 @@ Basil.core.event_actions = {
 		new Basil.core.run.leaf(elementToPass, targetFile);
 	},
 	
-	alert: function(str) { alert(str); },
+	alert: function(e, str) { alert(str); },
 	
-	location: function(url) {
+	location: function(e, url) {
 		if (url.search('#') == 0) window.location.hash = url;
 		else window.location = url;
 	}

@@ -34,6 +34,13 @@
 			
 		},
 		
+		createElementFromString: function(str) {
+			return new Element('div', { html: str }).getFirst();	
+		},
+		
+		insertElementAfter: function(el, after) {
+			after.inject(el, 'after');
+		},
 		
 		domReady: function(func) {
 			window.addEvent('domready', func);
@@ -41,6 +48,10 @@
 		
 		html: function(el, html) {
 			el.set('html',html);
+		},
+		
+		css: function(el, style, value) {
+			return el.setStyle(style, value);	
 		},
 		
 		addEvent: function(el, event, func, data) {

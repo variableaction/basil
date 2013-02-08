@@ -128,12 +128,16 @@ Basil.core.run.stem = new function() {
 			
 			// simple clone method
 			var elementWrapper = leafEl.outerHTML;
-			
+
 			// create the new element
-			var newElement = $(elementWrapper);
+			var newElement = Basil.util.createElementFromString(elementWrapper);
+			
+			//newElement.css('opacity', 1);
+			Basil.util.css(newElement,'opacity',1);
 			
 			// insert it after the old element
-			$(leafEl).after(newElement);
+			Basil.util.insertElementAfter(newElement,leafEl);
+			//$(leafEl).after(newElement);
 			
 			// remove the old element
 			Basil.util.fireEvent(leafEl, 'destroy');
@@ -141,7 +145,7 @@ Basil.core.run.stem = new function() {
 			leafEl.parentNode.removeChild(leafEl);
 	
 			// return the new element
-			return $(newElement).get(0);
+			return newElement;
 		};
 	
 	
@@ -157,9 +161,12 @@ Basil.core.run.stem = new function() {
 		Stores the current hash as an array after the #!/
 	*/
 		this.locate = function() {
+			var foundPath;
+			
 			// Check if there is a valid stem and the stem isn't empty, use the stem we found
 			var hash = window.location.hash.substr(2);
 			
+			// log hash change
 			Basil.log.print(LOG_DASHES,'HASH CHANGE!',window.location.hash,LOG_DASHES);
 			
 			Basil.core.run.stem.hashParams = {};
@@ -170,27 +177,33 @@ Basil.core.run.stem = new function() {
 				var hash = window.location.hash.substr(2);
 			}
 			
-			
-			var foundPath = Basil.core.settings.stems[hash];
-			
-			if (foundPath) return foundPath;
+			// if direct match return it
+			if ((foundPath = Basil.core.settings.stems[hash])) return foundPath;
 			
 			var hashParts =  hash.replace(/(^\/|\/$)/g, '').split('/');
 			
 			foundPath = Basil.util.each(Basil.core.settings.stems, function(stemHashPath,leafFile) {
-				
+
 				// Check if stemHashPath matches hash directly
 				if (stemHashPath == hash) return stemHashPath;
 				
+				// 
 				var stemHashParts = stemHashPath.replace(/(^\/|\/$)/g, '').split('/');
 				
+				// if found a stem that has same parts as the hash then check the parts
 				if (hashParts.length == stemHashParts.length) {
 				
 					var foundLoopPath = undefined;
+					
+					var stemMatchHash = true;
+					
+					// loop through each part of the stem
 					var foundLoopPath = Basil.util.each(stemHashParts, function(key, stemHashPart) {
+						
 						if (stemHashPart.search(':') != 0) {
-							if (stemHashPart != hashParts) {
-								return undefined;
+							if (stemHashPart != hashParts[key]) {
+								stemMatchHash = false;
+								return;
 							}
 						}
 						
@@ -201,7 +214,7 @@ Basil.core.run.stem = new function() {
 						
 					});
 					
-					if (foundLoopPath) {
+					if (foundLoopPath && stemMatchHash) {
 						// Store hash parameters
 						Basil.util.each(stemHashParts, function(key, stemHashPart) {
 							if (stemHashPart.search(':') == 0) {
