@@ -26,11 +26,13 @@ Basil.core.run.stem = new function() {
 				Basil.log.warn('No bsl-app detected!');
 				return;
 			}
-		
-			if (!this.findDefaultStem()) {
+			
+			this.defaultStem = this.findDefaultStem();
+			if (!this.defaultStem) {
 				Basil.log.exception('No stems found');
 				return;
 			}
+			
 	
 			// sets the location if no hash is present or no stem for location is found
 			var leafFile = this.locate();
@@ -82,7 +84,7 @@ Basil.core.run.stem = new function() {
 		Called when a hash change occurs
 	*/
 		this.hashChangeEvent = function(e) {
-			if (e.oldURL.search('#') < 0) return;
+			if (e && e.oldURL && e.oldURL.search('#') < 0) return;
 			
 			// override to not continue changing the page
 			if (Basil.core.run.stem.ignoreHash) {
@@ -126,11 +128,7 @@ Basil.core.run.stem = new function() {
 			// clear the inner contents to clone element
 			leafEl.innerHTML = '';
 			
-			// simple clone method
-			var elementWrapper = leafEl.outerHTML;
-
-			// create the new element
-			var newElement = Basil.util.createElementFromString(elementWrapper);
+			var newElement = Basil.util.clone(leafEl, true, false);
 			
 			//newElement.css('opacity', 1);
 			Basil.util.css(newElement,'opacity',1);
@@ -161,7 +159,7 @@ Basil.core.run.stem = new function() {
 		Stores the current hash as an array after the #!/
 	*/
 		this.locate = function() {
-			var foundPath;
+			var foundPath = false;
 			
 			// Check if there is a valid stem and the stem isn't empty, use the stem we found
 			var hash = window.location.hash.substr(2);
@@ -182,10 +180,14 @@ Basil.core.run.stem = new function() {
 			
 			var hashParts =  hash.replace(/(^\/|\/$)/g, '').split('/');
 			
-			foundPath = Basil.util.each(Basil.core.settings.stems, function(stemHashPath,leafFile) {
+			Basil.util.each(Basil.core.settings.stems, function(stemHashPath,leafFile) {
+				if (foundPath) return;
 
 				// Check if stemHashPath matches hash directly
-				if (stemHashPath == hash) return stemHashPath;
+				if (stemHashPath == hash) {
+					foundPath = stemHashPath;
+					return;
+				}
 				
 				// 
 				var stemHashParts = stemHashPath.replace(/(^\/|\/$)/g, '').split('/');
@@ -198,7 +200,8 @@ Basil.core.run.stem = new function() {
 					var stemMatchHash = true;
 					
 					// loop through each part of the stem
-					var foundLoopPath = Basil.util.each(stemHashParts, function(key, stemHashPart) {
+					Basil.util.each(stemHashParts, function(key, stemHashPart) {
+						if (foundLoopPath) return;
 						
 						if (stemHashPart.search(':') != 0) {
 							if (stemHashPart != hashParts[key]) {
@@ -209,7 +212,8 @@ Basil.core.run.stem = new function() {
 						
 						// If we are at the last key, and aren't failing at life, we found it!
 						if (key == stemHashParts.length -1) {
-							return stemHashPath;
+							foundLoopPath = stemHashPath;
+							return;
 						}
 						
 					});
@@ -224,7 +228,7 @@ Basil.core.run.stem = new function() {
 						
 						
 						// return found path
-						return foundLoopPath;
+						foundPath = foundLoopPath;
 					}
 				
 				}
@@ -232,7 +236,10 @@ Basil.core.run.stem = new function() {
 			}.bind(this));
 			
 			// if no foundPath, redirect to default
-			if (!foundPath) window.location.hash = '#!' + this.defaultStem;
+			if (!foundPath) {
+				window.location.hash = '#!' + this.defaultStem;
+				return;
+			}
 
 			return Basil.core.settings.stems[foundPath];
 		};
@@ -243,10 +250,10 @@ Basil.core.run.stem = new function() {
 	*/
 		this.findDefaultStem = function() {
 			var defaultStem = false;
-			this.defaultStem = Basil.util.each(Basil.core.settings.stems,function(key, value) {
-				if (!defaultStem) return key;
+			Basil.util.each(Basil.core.settings.stems,function(key, value) {
+				if (!defaultStem) defaultStem = key;
 			});
 			
-			return this.defaultStem ? this.defaultStem : false;	
+			return defaultStem;	
 		};
 };

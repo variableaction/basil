@@ -63,6 +63,10 @@
 			el.fireEvent(event);	
 		},
 		
+		clone: function(el, keepAttributes, deep) {
+			return el.clone(deep, keepAttributes);	
+		},
+		
 		
 		ajax: function(url,options) {
 			new Request({

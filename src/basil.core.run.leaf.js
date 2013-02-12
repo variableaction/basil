@@ -28,7 +28,7 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 				}.bind(this));
 			}
 		}
-		
+				
 		this.storeLeafInstance = function() {
 		
 			// Set unique leaf ID
@@ -90,7 +90,7 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 					callback: function(response) {
 						//Basil.util.elData(el,'data',leafInstanceDataLoaded);
 						this.data = response;
-						
+
 						if (this.htmlready) {
 							this.process();
 						}	
@@ -136,7 +136,7 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 				callback: function(response) {
 										
 					Basil.util.html(this.element, response);
-					
+
 					if (this.dataready) {
 						this.process();
 					}	
@@ -176,11 +176,11 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 			
 			//this.removeBasilAttributes();
 			this.load();
-			
+						
 			this.addUnloadEvent();
-			
+						
 			this.showElement();
-			
+						
 		};
 		
 		
@@ -204,7 +204,7 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 		this.findLoops = function(leafEl) {
 			// gets all items that have bsl-loop
 			var leaves = Basil.util.getElementsByAttribute(leafEl, 'bsl-loop');
-			
+
 			// if no leaves then continue processing page
 			if (!leaves.length) return;
 			
@@ -308,11 +308,11 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 		
 		
 		this.findEvents = function(leafEl) {
-			var event_types = [	'focus','blur','change','click','dblclick','error',
+			/*var event_types = [	'focus','blur','change','click','dblclick','error',
 								'keydown','keyup','keypress','load','contextmenu',
 								'mousedown','mouseup','mouseenter','mouseleave','mousemove',
 								'touchstart','touchmove','touchend','touchcancel',
-								'resize','scroll','submit','unload'];
+								'resize','scroll','submit','unload'];*/
 								
 			// load
 			// also need to add event in the future contentsloaded
@@ -350,9 +350,16 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 							var new_params = [];
 
 							Basil.util.each(params.split(','), function(index, param) {
+								param = param.trim();
+								
 								// store the string
-								if (param.search('\'') == 0) new_params.push(param.substr(1, param.length -2));
+								if (param.search('\'') == 0 || param.search('"') == 0) new_params.push(param.substr(1, param.length -2));
 								else if (param == 'this') new_params.push(leaf);
+								else if (param == 'true') new_params.push(true);
+								else if (param == 'false') new_params.push(false);
+								else {
+									new_params.push(window[param]);
+								}
 							});
 							params = new_params;
 						}
@@ -362,7 +369,7 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 
 							if (leafEvent == 'load') this.actions[func].apply(this, params);
 							
-							Basil.util.addEvent(leaf, leafEvent, this.actions[func], params);
+							Basil.util.addEvent(leaf, leafEvent, this.actions[func].bind(this), params);
 						}
 						
 						else if (Basil.app.actions[func]) {

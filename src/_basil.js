@@ -37,7 +37,7 @@ var LOG_OPENER = '# ';
 			
 			// Instances of data,etc being stored?
 			active: {
-				user_idle: false,
+				user_idle: false
 			},
 			
 			settings: {
@@ -105,13 +105,12 @@ var LOG_OPENER = '# ';
 
 
 	Basil.prepare = function(options) {
-		
+		if (!Basil.core.preflight()) return false;
+
 		Basil.util.each(options, function(key, value) {
 			Basil.core.settings[key] = value;
 		});
 				
-		Basil.core.preflight();
-		
 		Basil.util.domReady(Basil.core.run.stem.init.bind(Basil.core.run.stem));
 	}
 	
@@ -148,7 +147,7 @@ Basil.core.preflight = function() {
 		return;
 	}
 	
-	
+	return true;
 }
 
 

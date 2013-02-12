@@ -19,17 +19,7 @@ Basil.util = {
 /***
 	Loops through an object calling the passed in function
 */	
-	each: function(obj, func) {
-		for (var key in obj) {
-			if (key == 'length') continue;
 	
-			if (obj.hasOwnProperty(key)) {
-				var item = obj[key];
-				
-				if ((response = func(key, item))) return response;
-			}
-		}
-	},
 
 
 	getElements: function(el) {
@@ -41,11 +31,18 @@ Basil.util = {
 		return Basil.util.getElementsByAttribute(el, '');	
 	
 	},
+	
+	hashPart: function(num) {
+		var hashParts = window.location.hash.split('/');
+		return hashParts[num + 1];
+	},
 
 //##########################################################################################################
 //	Framework-proxied-methods
 //##########################################################################################################
-
+	each: function(obj, func) {
+		return Basil.core.adapter[Basil.core.framework].each.apply(this, arguments);
+	},
 
 	getElementBySelector: function() {
 		return Basil.core.adapter[Basil.core.framework].getElementBySelector.apply(this, arguments);
@@ -85,7 +82,11 @@ Basil.util = {
 	
 	fireEvent: function(el, event) {
 		return Basil.core.adapter[Basil.core.framework].fireEvent.apply(this, arguments);	
-	},	
+	},
+	
+	clone: function(el, keepAttributes, goDeep) {
+		return Basil.core.adapter[Basil.core.framework].clone.apply(this, arguments);	
+	},
 	
 //##########################################################################################################
 //	Ajax methods
@@ -105,7 +106,6 @@ Basil.util = {
 				'dataType'	: 'html',
 				'callback'	: function(response) {}
 			};
-			
 			
 			Basil.util.each(options, function(key, value) {
 				defaults[key] = value;
