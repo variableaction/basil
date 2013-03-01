@@ -82,9 +82,17 @@
 				},
 				onError: function(response) {
 					Basil.log.exception('AJAX ERROR', response);
+					
+					if (response.status == 401) {
+						window.location = '/login/' + window.location.hash;
+					}
 				},
 				onFailure: function(response) {
 					Basil.log.exception('AJAX FAILURE', response);
+					
+					if (response.status == 401) {
+						window.location = '/login/' + window.location.hash;
+					}
 				}
 			}).post(options.data);
 		}

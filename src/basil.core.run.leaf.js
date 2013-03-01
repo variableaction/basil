@@ -223,7 +223,7 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 					
 					ajax.getJSON(resource, {
 						callback: function(data) {
-							if (data) this.processLoops(loop, data);
+							this.processLoops(loop, data);
 						}.bind(this),
 						async: true
 					});
@@ -365,22 +365,15 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 						}
 
 						// if provided in the leaf actions use this action
-						if (this.actions[func]) {
-
-							if (leafEvent == 'load') this.actions[func].apply(this, params);
-							
+						if (this.actions[func]) {							
 							Basil.util.addEvent(leaf, leafEvent, this.actions[func].bind(this), params);
 						}
 						
-						else if (Basil.app.actions[func]) {
-							if (leafEvent == 'load') Basil.app.actions[func].apply(this, params);
-							
+						else if (Basil.app.actions[func]) {							
 							Basil.util.addEvent(leaf, leafEvent, Basil.app.actions[func], params);
 						}
 						
-						else if (Basil.core.event_actions[func]) {
-							if (leafEvent == 'load') Basil.core.event_actions[func].apply(this, params);
-							
+						else if (Basil.core.event_actions[func]) {							
 							Basil.util.addEvent(leaf, leafEvent, Basil.core.event_actions[func], params);
 						}
 						

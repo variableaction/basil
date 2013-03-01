@@ -86,15 +86,15 @@ Basil.core.run.stem = new function() {
 		this.hashChangeEvent = function(e) {
 			if (e && e.oldURL && e.oldURL.search('#') < 0) return;
 			
+			// fire hash change event passing the element
+			// Trigger user, before hash change
+			if (Basil.onHashChange) Basil.onHashChange(e);
+			
 			// override to not continue changing the page
 			if (Basil.core.run.stem.ignoreHash) {
 				Basil.core.run.stem.ignoreHash = false;
 				return;
 			}
-			
-			// fire hash change event passing the element
-			// Trigger user, before hash change
-			if (Basil.onHashChange) Basil.onHashChange(e);
 			
 			// Trigger leaf, before hash change
 			// passes back a new stem element to populate that represents section you are in
@@ -105,6 +105,10 @@ Basil.core.run.stem = new function() {
 	
 			// Load the new stem
 			this.loadStem(newStemLeaf);
+			
+			// fire hash change event passing the element
+			// Trigger user, before hash change
+			if (Basil.onStemChange) Basil.onStemChange(e);
 			
 		};
 	

@@ -101,14 +101,20 @@
 				success		: function(data, textStatus, jqXHR) {
 					Basil.log.print('AJAX SUCCESS', {responseData: data});
 					if (options.callback && typeof options.callback == 'function') options.callback(data);
+					hideLoading();
 				},
 				
 				error		: function(jqXHR, textStatus, errorThrown) {
 					//"timeout", "error", "abort", and "parsererror"
 					Basil.log.exception('AJAX ERROR', jqXHR, textStatus, errorThrown);
+					
+					if (jqXHR.status == 401) {
+						window.location = '/login/' + window.location.hash;
+					} else if (options.error && typeof options.error == 'function') options.error.apply(this, arguments);
 				},
 				
 				beforeSend	: function(jqXHR) {
+					showLoading();
 					Basil.log.print('AJAX REQUEST', url, options.data);
 				}
 				
