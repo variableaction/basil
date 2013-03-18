@@ -131,6 +131,22 @@ Basil.core.run.leaf = function(leafEl,leafFile,leafParentLeafID) {
 				target: leafEl
 			});
 */
+			var stemPath = Basil.core.run.stem.stemPath;
+			if (stemPath && stemPath.search(':') > 0) {
+				var stem_split 	= stemPath.substr(1, stemPath.length - 2).split('/');
+				var hash 		= window.location.hash.substr(3, window.location.hash.length - 4).split('/');
+				var get_params 	= '';
+				
+				Basil.util.each(stem_split, function(key, value) {
+					if (value.indexOf(':') == 0) {
+						get_params += '&' + value.substr(1) + '=' + encodeURIComponent(hash[key]);
+					}
+				});
+
+				if (leafFile.search(/\?/) > 0) leafFile += get_params;
+				else leafFile += '?' + get_params.substr(1);
+			}
+			
 			
 			Basil.util.ajax.get(Basil.core.settings.leaf_path + leafFile, {
 				callback: function(response) {

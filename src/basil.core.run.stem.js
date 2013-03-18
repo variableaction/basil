@@ -244,7 +244,8 @@ Basil.core.run.stem = new function() {
 				window.location.hash = '#!' + this.defaultStem;
 				return;
 			}
-
+			
+			this.stemPath = foundPath;
 			return Basil.core.settings.stems[foundPath];
 		};
 		
